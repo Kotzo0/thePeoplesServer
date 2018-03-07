@@ -56,9 +56,9 @@ onError: function (error) {
 }
 
 exports.deleteUser = function(req, res) {
-	var name = req.body.name;
+	var name = req.params.name;
 session
-  .run('DELETE ('+ name + ':User {name: "'+ name + '"})')
+  .run('MATCH (n:User {name: "'+ name + '"}) DELETE n')
 .subscribe({
 onCompleted: function () {
 res.send("task complete");

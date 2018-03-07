@@ -4,7 +4,7 @@ API functions:
 
 Add User - this should require auth
 POST request
-/users?name=example
+/users
 
 Get all users
 GET request
