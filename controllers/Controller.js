@@ -91,6 +91,23 @@ onError: function (error) {
 });
 }
 
+exports.unLikeMatch = function(req, res) {
+  var title = req.body.title;
+  var name = req.body.name;
+session
+.run('MATCH (n { name:"' + name + '"})-[l:LIKE]->'
+    + '({title:"' + title + '"}) DELETE l' )
+.subscribe({
+onCompleted: function () {
+res.send("task complete");
+session.close();
+},
+onError: function (error) {
+	console.log(error);
+}
+
+});
+}
 
 exports.deleteUser = function(req, res) {
 	var name = req.params.name;

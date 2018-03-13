@@ -20,4 +20,8 @@ module.exports = function(app) {
   app.route('/api/likematch')
     .post(con.likeMatch);
 
+  app.route('/api/unlikematch')
+  .post(con.unLikeMatch);
+
+
 };
