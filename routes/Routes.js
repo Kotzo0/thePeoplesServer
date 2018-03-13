@@ -14,4 +14,10 @@ module.exports = function(app) {
   app.route('/api/group/rec?')
     .get(con.recommend);
 
+  app.route('/api/songs')
+    .post(con.addSong);
+
+  app.route('/api/likematch')
+    .post(con.likeMatch);
+
 };
