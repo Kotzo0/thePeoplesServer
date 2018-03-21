@@ -3,6 +3,18 @@ var neo4j = require('neo4j-driver').v1;
 var driver = neo4j.driver("bolt://localhost", neo4j.auth.basic("neo4j","gimme"));
 var session = driver.session();
 
+//TODO: set environment vatiable to test against apikey
+exports.verifykey = function(apikey, fn) {
+  //if apikey is good
+  if (apikey === "123") {
+  return fn(null, true);
+}
+  //if apikey is not good
+  else {
+  return fn(null, false);
+}
+}
+
 exports.showUsers = function(req, res) {
 var user = "";
 session

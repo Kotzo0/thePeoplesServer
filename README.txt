@@ -12,7 +12,7 @@ base address http://ip:PORT/api
 
 API functions:
 
-Add User - this should require auth
+Add User
 POST request
 /users
 takes "name" in the body
