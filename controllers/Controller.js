@@ -33,9 +33,9 @@ session
   }
 
 exports.findUser = function(req, res) {
-var name = req.params.name;
+var id = req.params.userid;
 session
-  .run('MATCH (n:User {name:"'+ name +'" }) RETURN n LIMIT 25')
+  .run('MATCH (n:User {id:"'+ id +'" }) RETURN n LIMIT 25')
   .subscribe({
     onNext: function (record) {
       user = record.get('n');
@@ -52,12 +52,12 @@ session
 }
 
 exports.addUser = function(req, res) {
-	var name = req.body.name;
+	var id = req.body.userid;
 session
-  .run('CREATE ('+ name + ':User {name: "'+ name + '"})')
+  .run('CREATE (n:User {id: "'+ id + '"})')
 .subscribe({
 onCompleted: function () {
-res.send("Added User");
+res.send("Added User " + id);
 session.close();
 },
 onError: function (error) {
@@ -69,8 +69,9 @@ onError: function (error) {
 
 exports.addSong = function(req, res) {
 	var title = req.body.title;
+  var id = req.body.songid;
 session
-  .run('CREATE ('+ title + ':Title {title: "'+ title + '"})')
+  .run('CREATE (n:Song {id: "'+ id + '",title:"'+title+'"})')
 .subscribe({
 onCompleted: function () {
 res.send("Added Song");
@@ -84,13 +85,12 @@ onError: function (error) {
 }
 
 exports.likeMatch = function(req, res) {
-  var title = req.body.title;
-  var name = req.body.name;
+  var sid = req.body.songid;
+  var uid = req.body.userid;
 session
-.run('MATCH (' + name + ':User),(' + title + ':Title)'
-    + ' WHERE ' + name + '.name = "' + name + '" AND '
-    +           title + '.title = "' + title + '"'
-    + ' CREATE (' + name +')-[l:LIKE]->(' + title +')')
+.run('MATCH (n:User),(m:Song)'
+    + 'WHERE n.id = "' + uid + '" AND m.id = "' + sid + '"'
+    + 'CREATE (n)-[1:LIKE]->(m)')
 .subscribe({
 onCompleted: function () {
 res.send("task complete");
@@ -104,11 +104,11 @@ onError: function (error) {
 }
 
 exports.unLikeMatch = function(req, res) {
-  var title = req.body.title;
-  var name = req.body.name;
+  var sid = req.body.songid;
+  var uid = req.body.userid;
 session
-.run('MATCH (n { name:"' + name + '"})-[l:LIKE]->'
-    + '({title:"' + title + '"}) DELETE l' )
+.run('MATCH (n { id:"' + uid + '"})-[l:LIKE]->'
+    + '({id:"' + sid + '"}) DELETE l' )
 .subscribe({
 onCompleted: function () {
 res.send("task complete");
@@ -122,9 +122,9 @@ onError: function (error) {
 }
 
 exports.deleteUser = function(req, res) {
-	var name = req.params.name;
+	var uid = req.params.id;
 session
-  .run('MATCH (n:User {name: "'+ name + '"}) DELETE n')
+  .run('MATCH (n:User {id: "'+ uid + '"}) DELETE n')
 .subscribe({
 onCompleted: function () {
 res.send("Deleted User");
@@ -141,11 +141,29 @@ onError: function (error) {
 //parses the query for user ids
 //TODO: send cypher statement to Neo4j that takes ids as input for procedure
 exports.recommend = function(req,res) {
-	var list = "";
-	var n;
-	for (n in req.query) {
-		list += req.query[n] + " ";
+	var users = "", n, songs = "";
+	for (n in req.query.user) {
+    if (n != 0) {
+      users += ' OR '
+    }
+		users +='n.id= "'+req.query.user[n]+'"';
 	}
-	res.send(list);
+  session
+    .run('MATCH (n:User ) WHERE '+ users +
+    ' WITH collect(n) as nodes '+
+    "CALL algo.personalizedPageRank.stream(nodes, 'Page', 'LINKS', {weightProperty:'LIKE',iterations:20, dampingFactor:0.85})"+
+    ' YIELD node , score MATCH(node:Song)'+
+    ' RETURN node,node.title,score order by score desc limit 20')
+    .then (function(result,summary) {
+      result.records.forEach(function (record) {
+        songs += record.get('node.title') + " ";
+        console.log(record.get('node.title'));
+    });
+      res.send(songs);
+      session.close();
+    })
+      .catch( function (error) {
+        console.log(error);
+      });
 }
 driver.close();

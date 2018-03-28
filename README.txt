@@ -15,7 +15,7 @@ API functions:
 Add User
 POST request
 /users
-takes "name" in the body
+takes "userid" in the body
 
 Get all users
 GET request
@@ -30,5 +30,5 @@ DELETE request
 /users/:name
 
 Get recommendation
-GET request
+POST request
 /group/rec?

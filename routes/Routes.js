@@ -27,8 +27,8 @@ module.exports = function(app) {
     .get(con.showUsers)
     .post(con.addUser);
 
-  app.route('/api/group/rec?')
-    .get(con.recommend);
+  app.route('/api/group/rec')
+    .post(con.recommend);
 
   app.route('/api/songs')
     .post(con.addSong);
