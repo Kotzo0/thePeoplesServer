@@ -87,10 +87,11 @@ onError: function (error) {
 exports.likeMatch = function(req, res) {
   var sid = req.body.songid;
   var uid = req.body.userid;
+  var weight = req.body.weight;
 session
 .run('MATCH (n:User),(m:Song)'
     + 'WHERE n.id = "' + uid + '" AND m.id = "' + sid + '"'
-    + 'CREATE (n)-[1:LIKE]->(m)')
+    + 'CREATE (n)-[l:LIKE {like:'+weight+'} ]->(m)')
 .subscribe({
 onCompleted: function () {
 res.send("task complete");
@@ -151,7 +152,7 @@ exports.recommend = function(req,res) {
   session
     .run('MATCH (n:User ) WHERE '+ users +
     ' WITH collect(n) as nodes '+
-    "CALL algo.personalizedPageRank.stream(nodes, 'Page', 'LINKS', {weightProperty:'LIKE',iterations:20, dampingFactor:0.85})"+
+    "CALL algo.personalizedPageRank.stream(nodes, 'Page', 'LINKS', {weightProperty:'like',iterations:20, dampingFactor:0.85})"+
     ' YIELD node , score MATCH(node:Song)'+
     ' RETURN node,node.title,score order by score desc limit 20')
     .then (function(result,summary) {
