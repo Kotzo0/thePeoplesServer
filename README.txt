@@ -17,6 +17,11 @@ POST request
 /users
 takes "userid" in the body
 
+Add Song
+POST request
+/songs
+takes "songid" AND "title" in the body
+
 Get all users
 GET request
 /users
@@ -29,6 +34,21 @@ Delete user
 DELETE request
 /users/:name
 
+Add LIKE Relationship
+POST request 
+/likematch
+takes "songid" AND "userid" AND "weight" in the body
+weight is 0.5 for neutral and 1 for like
+
+UN-LIKE Relationship (Undo the LIKE Relationship)
+POST request
+/unlikematch
+takes "songid" AND "userid"
+
+
 Get recommendation
 POST request
-/group/rec?
+/group/rec
+query user
+
+
